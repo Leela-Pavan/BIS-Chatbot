@@ -1,0 +1,25 @@
+{
+  "name": "bis-sahayak-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.1.6",
+    "@playwright/test": "^1.49.1",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,41 @@
+[project]
+name = "bis-sahayak-api"
+version = "0.1.0"
+description = "Evidence-first API foundation for BIS Sahayak"
+requires-python = ">=3.8"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "beautifulsoup4>=4.12,<5.0",
+  "httpx>=0.28,<1.0",
+  "PyMuPDF>=1.24.11,<2.0",
+  "pydantic-settings>=2.6,<3.0",
+  "psycopg[binary]>=3.2,<4.0",
+  "pyyaml>=6.0,<7.0",
+  "uvicorn[standard]>=0.33,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+  "ruff>=0.9,<1.0",
+]
+
+ml = [
+  "sentence-transformers>=3.3,<4.0",
+]
+
+default = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

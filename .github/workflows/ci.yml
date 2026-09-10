@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: bis_sahayak
+          POSTGRES_USER: bis_sahayak
+          POSTGRES_PASSWORD: bis_sahayak
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bis_sahayak -d bis_sahayak"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply migrations
+        env:
+          PGPASSWORD: bis_sahayak
+        run: |
+          psql --host 127.0.0.1 --port 5432 --username bis_sahayak --dbname bis_sahayak \
+            --file backend/migrations/001_initial.sql
+          psql --host 127.0.0.1 --port 5432 --username bis_sahayak --dbname bis_sahayak \
+            --file backend/migrations/002_knowledge_layer.sql
+      - name: Verify schema
+        env:
+          PGPASSWORD: bis_sahayak
+        run: |
+          psql --host 127.0.0.1 --port 5432 --username bis_sahayak --dbname bis_sahayak \
+            --command "SELECT extname FROM pg_extension WHERE extname = 'vector';"
+          psql --host 127.0.0.1 --port 5432 --username bis_sahayak --dbname bis_sahayak \
+            --command "SELECT version FROM schema_migrations ORDER BY version;"
+          psql --host 127.0.0.1 --port 5432 --username bis_sahayak --dbname bis_sahayak \
+            --command "SELECT to_regclass('public.documents'), to_regclass('public.chunks'), to_regclass('public.provenance');"
