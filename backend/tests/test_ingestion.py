@@ -50,8 +50,10 @@ def test_fetcher_rejects_unapproved_redirect(html_source: SourceConfig) -> None:
         asyncio.run(fetcher.fetch(html_source))
 
 
-def test_empty_registry_is_explicit() -> None:
+def test_registry_contains_approved_sources() -> None:
     registry_path = Path(__file__).parents[2] / "data_sources" / "sources.yaml"
     registry = load_registry(registry_path)
 
-    assert registry.sources == []
+    assert len(registry.sources) > 0
+    assert all(source.enabled for source in registry.sources)
+    assert {source.approved_domain for source in registry.sources} == {"bis.gov.in"}
